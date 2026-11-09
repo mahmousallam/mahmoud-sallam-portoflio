@@ -1,0 +1,24 @@
+const S=window.SITE,$=(s)=>document.querySelector(s),h=(s,v)=>{const e=$(s);if(e)e.innerHTML=v};
+const dom=u=>u.replace(/^https?:\/\//,"").replace(/\/$/,"");
+const pc=p=>`<a class="pcard reveal" href="project.html?p=${p.slug}"><div class="shot"><span class="ph">${dom(p.url)}<br><small>Screenshot pending</small></span><img src="assets/projects/${p.slug}-1.png" alt="${p.title} preview" loading="lazy" onerror="this.remove()"></div><div class="pmeta"><span class="tag">${p.category}</span><h3>${p.title}</h3><p>${p.overview}</p><span class="more">Case study →</span></div></a>`;
+h("#skills",Object.entries(S.skills).map(([k,v])=>`<div class="sk reveal"><h3>${k}</h3><ul class="tags">${v.map(x=>`<li>${x}</li>`).join("")}</ul></div>`).join(""));
+h("#about-list",S.about.map(x=>`<li>${x}</li>`).join(""));h("#edu",S.education);
+h("#svc",S.services.map((s,i)=>`<div class="svc reveal"><span class="n">${String(i+1).padStart(2,"0")}</span><h3>${s[0]}</h3><p>${s[1]}</p><a href="${S.whatsapp}?text=${encodeURIComponent("Hi Mahmoud, I'd like to ask about: "+s[0])}" target="_blank" rel="noopener">Inquire →</a></div>`).join(""));
+h("#proj-c",S.projects.filter(p=>p.group==="commercial").map(pc).join(""));
+h("#proj-i",S.projects.filter(p=>p.group==="initiative").map(pc).join(""));
+h("#steps",S.process.map((s,i)=>`<li class="reveal"><span>${String(i+1).padStart(2,"0")}</span><h3>${s[0]}</h3><p>${s[1]}</p></li>`).join(""));
+const cats=["All",...new Set(S.gallery.map(g=>g.c))],lb=$("#lb");
+h("#filters",cats.map((c,i)=>`<button class="chip${i?"":" on"}" data-c="${c}">${c}</button>`).join(""));
+function gal(c){h("#gal",S.gallery.map((g,i)=>[g,i]).filter(([g])=>c==="All"||g.c===c).map(([g,i])=>`<button class="gi" data-i="${i}">${g.src?`<img src="${g.src}" alt="${g.t}" loading="lazy">`:`<span class="ph">PLACEHOLDER<br><small>${g.t}</small></span>`}<em>${g.c}</em></button>`).join(""))}
+gal("All");
+$("#filters").onclick=e=>{const b=e.target.closest("button");if(!b)return;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===b));gal(b.dataset.c)};
+$("#gal").onclick=e=>{const b=e.target.closest(".gi");if(!b)return;const g=S.gallery[b.dataset.i];h("#lb-body",g.src?`<img src="${g.src}" alt="${g.t}">`:`<div class="ph big">PLACEHOLDER<br><small>${g.t} — replace with real work</small></div>`);lb.showModal()};
+$("#lb-x").onclick=()=>lb.close();lb.onclick=e=>{if(e.target===lb)lb.close()};
+const mail=$("#mail");mail.href="mailto:"+S.email;mail.textContent=S.email;
+["wa","wa2","wa3"].forEach(i=>{const e=document.getElementById(i);if(e)e.href=S.whatsapp});
+$("#ph").textContent=S.phone;$("#li").href=S.linkedin;$("#gh").href=S.github;
+const cv=$("#cv");fetch(S.cv.file,{method:"HEAD"}).then(r=>{if(!r.ok)throw 0;cv.href=S.cv.file;cv.setAttribute("download","")}).catch(()=>{cv.removeAttribute("href");cv.classList.add("off");cv.textContent="CV — placeholder (add PDF to /cv)"});
+$("#form").onsubmit=e=>{e.preventDefault();const f=new FormData(e.target);location.href=`mailto:${S.email}?subject=${encodeURIComponent("Project inquiry from "+f.get("name"))}&body=${encodeURIComponent(f.get("message")+"\n\n— "+f.get("name")+" ("+f.get("email")+")")}`};
+$("#menu").onclick=()=>document.body.classList.toggle("open");$("#nav").onclick=()=>document.body.classList.remove("open");
+const io=new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add("in");io.unobserve(x.target)}}),{threshold:.1});
+document.querySelectorAll(".reveal").forEach(e=>io.observe(e));
